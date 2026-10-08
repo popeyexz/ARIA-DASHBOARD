@@ -348,7 +348,7 @@ export default function LocalModelsPage() {
           </a>{' '}
           running on your machine.
         </p>
-        <CodeBlock code="curl -fsSL https://ollama.ai/install.sh | sh" />
+        <CodeBlock code="curl -fsSL https://ollama.ai/install.sh -o install-ollama.sh && sh install-ollama.sh" />
         <p className="text-[11px] text-gray-600">
           Windows: download the installer from{' '}
           <a

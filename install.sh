@@ -48,7 +48,7 @@ fi
 echo -e "${BOLD}[1/5] Checking Node.js...${RESET}"
 if ! command -v node &>/dev/null; then
   echo -e "${YELLOW}Node.js not found. Installing via nvm...${RESET}"
-  curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+  curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh -o /tmp/nvm-install.sh && bash /tmp/nvm-install.sh && rm -f /tmp/nvm-install.sh
   export NVM_DIR="$HOME/.nvm"
   # shellcheck source=/dev/null
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"

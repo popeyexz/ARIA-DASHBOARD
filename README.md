@@ -220,7 +220,7 @@ Copy `.env.example` to `.env` and fill in your values.
 
 ```bash
 # Install Ollama
-curl -fsSL https://ollama.ai/install.sh | sh
+curl -fsSL https://ollama.ai/install.sh -o install-ollama.sh && sh install-ollama.sh
 
 # Pull models
 ollama pull llama3

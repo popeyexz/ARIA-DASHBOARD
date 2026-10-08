@@ -37,7 +37,7 @@ export function getHealingSuggestion(serviceId) {
  */
 export function buildSystemPrompt(serviceStatuses = []) {
   const memory = getMemory()
-  const userName = memory.user?.name ?? 'Sharuk'
+  const userName = memory.user?.name ?? process.env.DEFAULT_USER_NAME ?? 'User'
   const prefs = memory.user?.preferences ?? {}
   const prefsText =
     Object.keys(prefs).length > 0

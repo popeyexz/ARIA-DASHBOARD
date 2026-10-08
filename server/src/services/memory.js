@@ -18,7 +18,7 @@ export const MEMORY_FILE =
 /** Default memory shape — created on first boot */
 const DEFAULT_MEMORY = {
   user: {
-    name: 'Sharuk',
+    name: process.env.DEFAULT_USER_NAME ?? 'User',
     preferences: {},
     projects: [],
     notes: [],
@@ -69,13 +69,21 @@ function resolvePath(obj, dotPath, create = false) {
   const parts = dotPath.split('.')
   let cursor = obj
   for (let i = 0; i < parts.length - 1; i++) {
-    if (cursor[parts[i]] === undefined) {
-      if (!create) return null
-      cursor[parts[i]] = {}
+    const part = parts[i]
+    if (part === '__proto__' || part === 'constructor' || part === 'prototype') {
+      return null
     }
-    cursor = cursor[parts[i]]
+    if (cursor[part] === undefined) {
+      if (!create) return null
+      cursor[part] = {}
+    }
+    cursor = cursor[part]
   }
-  return { parent: cursor, key: parts[parts.length - 1] }
+  const key = parts[parts.length - 1]
+  if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+    return null
+  }
+  return { parent: cursor, key }
 }
 
 // ── Public API ────────────────────────────────────────────────────────────────
@@ -92,6 +100,9 @@ export function getMemory() {
 export function setMemoryKey(path, value, actor = 'user') {
   const memory = loadMemory()
   const resolved = resolvePath(memory, path, true)
+  if (!resolved || !resolved.parent) {
+    throw new Error('Invalid memory path')
+  }
   const prev = resolved.parent[resolved.key]
   resolved.parent[resolved.key] = value
   appendAudit(memory, actor, 'set', path, prev, value)
@@ -106,7 +117,7 @@ export function setMemoryKey(path, value, actor = 'user') {
 export function deleteMemoryKey(path, actor = 'user') {
   const memory = loadMemory()
   const resolved = resolvePath(memory, path, false)
-  if (!resolved) return memory
+  if (!resolved || !resolved.parent) return memory
   const prev = resolved.parent[resolved.key]
   delete resolved.parent[resolved.key]
   appendAudit(memory, actor, 'delete', path, prev, null)
@@ -115,12 +126,14 @@ export function deleteMemoryKey(path, actor = 'user') {
 }
 
 /** Paths that users must not write to directly (append-only via internal audit). */
-const PROTECTED_PATHS = ['auditLog', 'updatedAt']
+const PROTECTED_PATHS = ['auditLog', 'updatedAt', '__proto__', 'constructor', 'prototype']
 
 /** Returns true if dotPath equals or is nested under a protected path. */
 export function isProtectedPath(dotPath) {
-  return PROTECTED_PATHS.some(
-    (p) => dotPath === p || dotPath.startsWith(p + '.'),
+  const parts = dotPath.split('.')
+  return (
+    PROTECTED_PATHS.some((p) => dotPath === p || dotPath.startsWith(p + '.')) ||
+    parts.some((part) => part === '__proto__' || part === 'constructor' || part === 'prototype')
   )
 }
 
